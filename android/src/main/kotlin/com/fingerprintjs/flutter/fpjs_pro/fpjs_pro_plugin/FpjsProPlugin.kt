@@ -19,7 +19,8 @@ class FpjsProPlugin : FlutterPlugin, MethodCallHandler {
     private lateinit var channel: MethodChannel
     private lateinit var applicationContext: Context
     private lateinit var fpjsClient: Fingerprinter
-
+    private var deviceID: String? = null
+    private var fingerprint: String? = null
     override fun onAttachedToEngine(@NonNull flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
         channel = MethodChannel(flutterPluginBinding.binaryMessenger, "fpjs_pro_plugin")
         channel.setMethodCallHandler(this)
@@ -35,18 +36,16 @@ class FpjsProPlugin : FlutterPlugin, MethodCallHandler {
 
             GET_DEVICE_ID -> {
                 fpjsClient.getDeviceId(version = Fingerprinter.Version.V_5) { res ->
-                    val deviceId = res.deviceId
-                    result.success(deviceId)
+                    deviceID = res.deviceId
                 }
-
-//                result.error("Error", "Unable to retreive device id", null)
+                result.success(deviceID)
             }
 
             GET_FINGERPRINT -> {
-                fpjsClient.getFingerprint(version = Fingerprinter.Version.V_5) { fingerprint ->
-                    result.success(fingerprint)
+                fpjsClient.getFingerprint(version = Fingerprinter.Version.V_5) { fn ->
+                    fingerprint=fn
                 }
-//                result.error("Error", "Unable to retreive fingerprint", null)
+                result.success(fingerprint)
             }
 
             else -> {
