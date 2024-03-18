@@ -39,14 +39,14 @@ class FpjsProPlugin : FlutterPlugin, MethodCallHandler {
                     result.success(deviceId)
                 }
 
-                result.error("Error", "Unable to retreive device id", null)
+//                result.error("Error", "Unable to retreive device id", null)
             }
 
             GET_FINGERPRINT -> {
                 fpjsClient.getFingerprint(version = Fingerprinter.Version.V_5) { fingerprint ->
                     result.success(fingerprint)
                 }
-                result.error("Error", "Unable to retreive fingerprint", null)
+//                result.error("Error", "Unable to retreive fingerprint", null)
             }
 
             else -> {
