@@ -22,20 +22,20 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   group('Should throw if called before initialization', () {
-    test('getVisitorId', () async {
-      expect(() => FpjsProPlugin.getVisitorId(), throwsException);
+    test('getDeviceId', () async {
+      expect(() => FpjsProPlugin.getDeviceId(), throwsException);
     });
 
-    test('getVisitorData', () async {
-      expect(() => FpjsProPlugin.getVisitorData(), throwsException);
+    test('getFingerprint', () async {
+      expect(() => FpjsProPlugin.getFingerprint(), throwsException);
     });
   });
 
-  group('getVisitorId', () {
+  group('getDeviceId', () {
     setUp(() {
       TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
           .setMockMethodCallHandler(channel, (MethodCall methodCall) async {
-        if (methodCall.method == 'getVisitorId') {
+        if (methodCall.method == 'getDeviceId') {
           return testVisitorId;
         }
         return null;
@@ -48,21 +48,21 @@ void main() {
     });
 
     test('should return visitor id when called without tags', () async {
-      await FpjsProPlugin.initFpjs(testApiKey);
-      final result = await FpjsProPlugin.getVisitorId();
+      await FpjsProPlugin.initFpjs();
+      final result = await FpjsProPlugin.getDeviceId();
       expect(result, testVisitorId);
     });
 
     test('should return visitor id when called with tags', () async {
-      await FpjsProPlugin.initFpjs(testApiKey);
-      final result = await FpjsProPlugin.getVisitorId(
+      await FpjsProPlugin.initFpjs();
+      final result = await FpjsProPlugin.getDeviceId(
           tags: {'sessionId': DateTime.now().millisecondsSinceEpoch});
       expect(result, testVisitorId);
     });
 
     test('should return visitor id when called with linkedId', () async {
-      await FpjsProPlugin.initFpjs(testApiKey);
-      final result = await FpjsProPlugin.getVisitorId(linkedId: linkedId);
+      await FpjsProPlugin.initFpjs();
+      final result = await FpjsProPlugin.getDeviceId(linkedId: linkedId);
       expect(result, testVisitorId);
     });
   });
@@ -81,25 +81,6 @@ void main() {
     tearDown(() {
       TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
           .setMockMethodCallHandler(channel, null);
-    });
-
-    test('should return visitor id when called without tags', () async {
-      await FpjsProPlugin.initFpjs(testApiKey);
-      final result = await FpjsProPlugin.getVisitorData();
-      expect(result.toJson(), getVisitorDataResponse);
-    });
-
-    test('should return visitor id when called with tags', () async {
-      await FpjsProPlugin.initFpjs(testApiKey);
-      final result = await FpjsProPlugin.getVisitorData(
-          tags: {'sessionId': DateTime.now().millisecondsSinceEpoch});
-      expect(result.toJson(), getVisitorDataResponse);
-    });
-
-    test('should return visitor id when called with linkedId', () async {
-      await FpjsProPlugin.initFpjs(testApiKey);
-      final result = await FpjsProPlugin.getVisitorData(linkedId: linkedId);
-      expect(result.toJson(), getVisitorDataResponse);
     });
   });
 }

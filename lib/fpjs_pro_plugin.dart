@@ -21,21 +21,8 @@ class FpjsProPlugin {
   static var _isExtendedResult = false;
 
   /// Initializes the native FingerprintJS Pro client
-  /// Throws a [PlatformException] if [apiKey] is missing
-  static Future<void> initFpjs(String apiKey,
-      {String? endpoint,
-      String? scriptUrlPattern,
-      Region? region,
-      bool extendedResponseFormat = false}) async {
-    await _channel.invokeMethod('init', {
-      'apiToken': apiKey,
-      'endpoint': endpoint,
-      'scriptUrlPattern': scriptUrlPattern,
-      'region': region?.stringValue,
-      'extendedResponseFormat': extendedResponseFormat,
-      'pluginVersion': pluginVersion,
-    });
-    _isExtendedResult = extendedResponseFormat;
+  static Future<void> initFpjs() async {
+    await _channel.invokeMethod('init');
     _isInitialized = true;
   }
 
@@ -43,7 +30,7 @@ class FpjsProPlugin {
   /// Support [tags](https://dev.fingerprint.com/docs/quick-start-guide#tagging-your-requests)
   /// Support [linkedId](https://dev.fingerprint.com/docs/quick-start-guide#tagging-your-requests)
   /// Throws a [FingerprintProError] if identification request fails for any reason
-  static Future<String?> getVisitorId(
+  static Future<String?> getDeviceId(
       {Map<String, dynamic>? tags, String? linkedId}) async {
     if (!_isInitialized) {
       throw Exception(
@@ -51,8 +38,7 @@ class FpjsProPlugin {
     }
 
     try {
-      final String? visitorId = await _channel
-          .invokeMethod('getVisitorId', {'linkedId': linkedId, 'tags': tags});
+      final String? visitorId = await _channel.invokeMethod('getDeviceId');
       return visitorId;
     } on PlatformException catch (exception) {
       throw unwrapError(exception);
@@ -63,7 +49,7 @@ class FpjsProPlugin {
   /// Support [tags](https://dev.fingerprint.com/docs/quick-start-guide#tagging-your-requests)
   /// Support [linkedId](https://dev.fingerprint.com/docs/quick-start-guide#tagging-your-requests)
   /// Throws a [FingerprintProError] if identification request fails for any reason
-  static Future<T> getVisitorData<T extends FingerprintJSProResponse>(
+  static Future<T> getFingerprint<T extends FingerprintJSProResponse>(
       {Map<String, dynamic>? tags, String? linkedId}) async {
     if (!_isInitialized) {
       throw Exception(
@@ -71,27 +57,9 @@ class FpjsProPlugin {
     }
 
     try {
-      final visitorDataTuple = await _channel
-          .invokeMethod('getVisitorData', {'linkedId': linkedId, 'tags': tags});
+      final fingerprint = await _channel.invokeMethod('getFingerprint');
 
-      final String requestId = visitorDataTuple[0];
-      final num confidence = visitorDataTuple[1];
-
-      Map<String, dynamic> visitorDataJson;
-      if (kIsWeb) {
-        visitorDataJson = Map<String, dynamic>.from(visitorDataTuple[2]);
-      } else {
-        final String visitorDataJsonString = visitorDataTuple[2];
-        visitorDataJson = jsonDecode(visitorDataJsonString);
-      }
-
-      final visitorData = _isExtendedResult
-          ? FingerprintJSProExtendedResponse.fromJson(
-              visitorDataJson, requestId, confidence)
-          : FingerprintJSProResponse.fromJson(
-              visitorDataJson, requestId, confidence);
-
-      return visitorData as T;
+      return fingerprint;
     } on PlatformException catch (exception) {
       throw unwrapError(exception);
     }

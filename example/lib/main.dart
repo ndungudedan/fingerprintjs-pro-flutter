@@ -67,15 +67,9 @@ class _MyAppState extends State<MyApp> {
       final regionQueryParam = (region != null && region != Region.us)
           ? "?region=${region.stringValue}"
           : '';
-      await FpjsProPlugin.initFpjs(apiToken,
-          extendedResponseFormat: true,
-          endpoint:
-              "$_proxyIntegrationPath/$_proxyIntegrationRequestPath$regionQueryParam",
-          scriptUrlPattern:
-              "$_proxyIntegrationPath/$_proxyIntegrationScriptPath",
-          region: region);
+      await FpjsProPlugin.initFpjs();
     } else {
-      await FpjsProPlugin.initFpjs(apiToken, extendedResponseFormat: true);
+      await FpjsProPlugin.initFpjs();
     }
   }
 
@@ -85,7 +79,7 @@ class _MyAppState extends State<MyApp> {
   Future<void> _getDeviceId() async {
     String deviceId;
     try {
-      deviceId = await FpjsProPlugin.getVisitorId(
+      deviceId = await FpjsProPlugin.getDeviceId(
               tags: tags, linkedId: 'some linkedId') ??
           'Unknown';
     } on FingerprintProError {
@@ -102,53 +96,6 @@ class _MyAppState extends State<MyApp> {
     });
   }
 
-  Future<String> _getDeviceData() async {
-    String identificationInfo;
-    try {
-      const encoder = JsonEncoder.withIndent('    ');
-      final deviceData = await FpjsProPlugin.getVisitorData(
-          tags: tags, linkedId: 'some linkedId');
-      identificationInfo = encoder.convert(deviceData);
-    } on FingerprintProError catch (error) {
-      identificationInfo = "Failed to get device info.\n$error";
-    }
-    return identificationInfo;
-  }
-
-  Future<void> _runChecks() async {
-    setState(() {
-      _checksResult = 'Running';
-    });
-    try {
-      var checks = [
-        () async => FpjsProPlugin.getVisitorId(),
-        () async => FpjsProPlugin.getVisitorData(),
-        () async => FpjsProPlugin.getVisitorId(linkedId: 'checkId'),
-        () async => FpjsProPlugin.getVisitorData(linkedId: 'checkData'),
-        () async => FpjsProPlugin.getVisitorId(tags: tags),
-        () async => FpjsProPlugin.getVisitorData(tags: tags),
-        () async =>
-            FpjsProPlugin.getVisitorId(linkedId: 'checkIdWithTag', tags: tags),
-        () async => FpjsProPlugin.getVisitorData(
-            linkedId: 'checkDataWithTag', tags: tags),
-      ];
-
-      for (var _check in checks) {
-        await _check();
-        setState(() {
-          _checksResult += '.';
-        });
-      }
-      setState(() {
-        _checksResult = 'Success!';
-      });
-    } catch (e) {
-      setState(() {
-        _checksResult = 'Failed: $e';
-      });
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -159,13 +106,13 @@ class _MyAppState extends State<MyApp> {
         body: Center(
             child:
                 Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-          ElevatedButton(
-              onPressed: () => _runChecks(), child: const Text('Run tests!')),
+          // ElevatedButton(
+          //     onPressed: () => _runChecks(), child: const Text('Run tests!')),
           Text('Checks result: $_checksResult\n'),
           ElevatedButton(
               onPressed: () => _getDeviceId(), child: const Text('Identify!')),
           Text('The device id is: $_deviceId\n'),
-          _ExtendedResultDialog(handleIdentificate: _getDeviceData)
+          // _ExtendedResultDialog(handleIdentificate: _getDeviceData)
         ])),
       ),
     );
